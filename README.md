@@ -1,0 +1,2 @@
+# ezlog
+basic leveled logging
