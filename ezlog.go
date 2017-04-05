@@ -29,10 +29,10 @@
 // set log level are discarded.
 //
 // Leveled log lines are written with the Error[f|ln], Info[f|ln], Debug[f|ln]
-// methods. In addition to the leveled log lines, two other types of prefixed
-// log lines can be written: Fatal[f|ln] and Panic[f|ln]. Log lines w/o levels
-// can be written with the Print[f|ln] methods. These methods will always
-// result in the log lines being written.
+// methods. Aside from the leveled log lines, two other types of prefixed log
+// lines can be written: Fatal[f|ln] and Panic[f|ln]. Log lines w/o levels can
+// be written with the Print[f|ln] methods. These methods will always result in
+// the log lines being written.
 package ezlog
 
 import (
