@@ -484,6 +484,16 @@ func TestPrint(t *testing.T) {
 	if buf.Len() > 0 {
 		t.Errorf("println: expected len to be 0; got %d", buf.Len())
 	}
+	SetPrefix("---")
+	p := Prefix()
+	if p != "---" {
+		t.Errorf("got %q; want \"---\"", p)
+	}
+	SetFlags(Lshortfile)
+	f := Flags()
+	if f != Lshortfile {
+		t.Errorf("got %d; want %d", f, Lshortfile)
+	}
 	tst := New(LogDebug, &buf, "", 0)
 	tst.Print(s)
 	if buf.String() != fmt.Sprintf("%s\n", s) {
