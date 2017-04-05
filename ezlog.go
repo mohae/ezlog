@@ -68,10 +68,10 @@ const (
 type Level int32 // for sync.Atomic.Int32
 
 const (
-	LogNone  Level = iota + 1 // No logging.
-	LogError                  // Log Error lines.
-	LogInfo                   // Log Info and Error lines.
-	LogDebug                  // Log Debug, Info, and Error lines.
+	LogNone  Level = iota + 1 // no logging
+	LogError                  // log Error lines.
+	LogInfo                   // log Info and Error lines.
+	LogDebug                  // log Debug, Info, and Error lines.
 	logFatal
 	logPanic
 )
@@ -98,8 +98,8 @@ func (l Level) String() string {
 	return levelName[l]
 }
 
-// Get the Level corresponding to s. A false will be returned if s doesn't
-// match any Levels.
+// LevelByName gets the Level corresponding to s. A false will be returned if s
+// doesn't match any Levels.
 func LevelByName(s string) (level Level, ok bool) {
 	v := strings.ToUpper(s)
 	switch v {
@@ -153,7 +153,7 @@ func ParseLogFlag(s string) (l int, err error) {
 	return 0, UnknownFlagError{s}
 }
 
-// Logger: generates leveled log lines of output to an io.Writer if the log
+// Logger generates leveled log lines of output to an io.Writer if the log
 // level is <= the logger's level. This is safe for concurrent use.
 type Logger struct {
 	l       *log.Logger
@@ -314,6 +314,36 @@ func (l *Logger) Panicln(v ...interface{}) {
 	panic(s)
 }
 
+// Print writes a log line to the logger. Unless the logger's level is LogNone,
+// the line will always be written. Arguments are handled in the manner of
+// fmt.Print.
+func (l *Logger) Print(v ...interface{}) {
+	if l.level <= LogNone {
+		return
+	}
+	l.l.Output(2, fmt.Sprint(v...))
+}
+
+// Printf writes a log line to the logger. Unless the logger's level is
+// LogNone, the line will always be written. Arguments are handled in the
+// manner of fmt.Printf.
+func (l *Logger) Printf(format string, v ...interface{}) {
+	if l.level <= LogNone {
+		return
+	}
+	l.l.Output(2, fmt.Sprintf(format, v...))
+}
+
+// Println writes a log line to the logger. Unless the logger's level is
+// LogNone, the line will always be written. Arguments are handled in the
+// manner of fmt.Println.
+func (l *Logger) Println(v ...interface{}) {
+	if l.level <= LogNone {
+		return
+	}
+	l.l.Output(2, fmt.Sprintln(v...))
+}
+
 // UseChar sets if the logger's log line should use the first character of the
 // Level name. When false, the default, the full name of the Level will be
 // used.
@@ -348,7 +378,7 @@ func (l *Logger) Prefix() string {
 	return l.l.Prefix()
 }
 
-// Setflags sets the logger's flags.
+// SetFlags sets the logger's flags.
 func (l *Logger) SetFlags(flags int) {
 	l.l.SetFlags(flags)
 }
@@ -358,7 +388,7 @@ func (l *Logger) SetPrefix(prefix string) {
 	l.l.SetPrefix(prefix)
 }
 
-// Set sets the logger's output.
+// SetOutput sets the logger's output.
 func (l *Logger) SetOutput(w io.Writer) {
 	l.l.SetOutput(w)
 }
@@ -463,6 +493,27 @@ func Panicf(format string, v ...interface{}) {
 // panic(). Arguments are handled in the manner of fmt.Println.
 func Panicln(v ...interface{}) {
 	std.Panicln(v...)
+}
+
+// Print writes a log line to the standard logger. Unless the logger's level is
+// LogNone, the line will always be written. Arguments are handled in the
+// manner of fmt.Print.
+func Print(v ...interface{}) {
+	std.Print(v...)
+}
+
+// Printf writes a log line to the standard logger. Unless the logger's level
+// is LogNone, the line will always be written. Arguments are handled in the
+// manner of fmt.Printf.
+func Printf(format string, v ...interface{}) {
+	std.Printf(format, v...)
+}
+
+// Println writes a log line to the standard logger. Unless the logger's level
+// is LogNone, the line will always be written. Arguments are handled in the
+// manner of fmt.Println.
+func Println(v ...interface{}) {
+	std.Println(v...)
 }
 
 // UseChar sets if the standard logger's log line should use the first

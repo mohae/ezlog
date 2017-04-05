@@ -79,40 +79,40 @@ func TestParseLogFlag(t *testing.T) {
 
 func TestNoneLogger(t *testing.T) {
 	var buf bytes.Buffer
-	l := New(LogNone, &buf, "", 0)
-	l.Error("error")
+	SetLevel(LogNone)
+	Error("error")
 	if buf.Len() > 0 {
 		t.Errorf("write error line: expected no bytes to be written, %d were", buf.Len())
 	}
-	l.Errorf("errorf: %d", 42)
+	Errorf("errorf: %d", 42)
 	if buf.Len() > 0 {
 		t.Errorf("write errorf line: expected no bytes to be written, %d were", buf.Len())
 	}
-	l.Errorln("error")
+	Errorln("error")
 	if buf.Len() > 0 {
 		t.Errorf("write error line: expected no bytes to be written, %d were", buf.Len())
 	}
-	l.Info("info")
+	Info("info")
 	if buf.Len() > 0 {
 		t.Errorf("write info line: expected no bytes to be written, %d were", buf.Len())
 	}
-	l.Infof("infof: %d", 42)
+	Infof("infof: %d", 42)
 	if buf.Len() > 0 {
 		t.Errorf("write infof line: expected no bytes to be written, %d were", buf.Len())
 	}
-	l.Infoln("info")
+	Infoln("info")
 	if buf.Len() > 0 {
 		t.Errorf("write info line: expected no bytes to be written, %d were", buf.Len())
 	}
-	l.Debug("debug")
+	Debug("debug")
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
 	}
-	l.Debugf("debugf: %d", 42)
+	Debugf("debugf: %d", 42)
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
 	}
-	l.Debug("debug")
+	Debugln("debugln")
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
 	}
@@ -340,77 +340,77 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 // This also tests the package global logger
 func TestSetLogLevelPrefixFlags(t *testing.T) {
 	var buf bytes.Buffer
-	SetFlags(0)
-	f := Flags()
+	tst := New(LogDebug, &buf, "", Lshortfile)
+	tst.SetFlags(0)
+	f := tst.Flags()
 	if f != 0 {
 		t.Errorf("flags: got %d; want 0", f)
 	}
-	SetOutput(&buf)
-	SetLevel(LogDebug)
-	Error("error")
+	tst.SetLevel(LogDebug)
+	tst.Error("error")
 	if buf.String() != "ERROR: error\n" {
 		t.Errorf("write error line: got %q; want \"ERROR: error\n\"", buf.String())
 	}
 	buf.Reset()
-	Errorf("errorf: %d %s", 42, "eleven")
+	tst.Errorf("errorf: %d %s", 42, "eleven")
 	if buf.String() != "ERROR: errorf: 42 eleven\n" {
 		t.Errorf("write errorf line: got %q; want \"ERROR: errorf: 42 eleven\n\"", buf.String())
 	}
 	buf.Reset()
-	Errorln("errorln:", 42, "eleven")
+	tst.Errorln("errorln:", 42, "eleven")
 	if buf.String() != "ERROR: errorln: 42 eleven\n" {
 		t.Errorf("write errorln line: got %q; want \"ERROR: errorln: 42 eleven\n\"", buf.String())
 	}
 	buf.Reset()
-	Info("info")
+	tst.Info("info")
 	if buf.String() != "INFO: info\n" {
 		t.Errorf("write info line: got %q; want \"INFO: info\n\"", buf.String())
 	}
 	buf.Reset()
-	Infof("infof: %d", 42)
+	tst.Infof("infof: %d", 42)
 	if buf.String() != "INFO: infof: 42\n" {
 		t.Errorf("write infof line: got %q; want \"INFO: infof: 42\n\"", buf.String())
 	}
 	buf.Reset()
-	Infoln("infoln:", 42)
+	tst.Infoln("infoln:", 42)
 	if buf.String() != "INFO: infoln: 42\n" {
 		t.Errorf("write infoln line: got %q; want \"INFO: infoln: 42\n\"", buf.String())
 	}
 	buf.Reset()
-	SetPrefix("abc")
-	p := Prefix()
+	tst.SetPrefix("abc")
+	p := tst.Prefix()
 	if p != "abc" {
 		t.Errorf("prefix: got %q; want \"abc\"", p)
 	}
-	UseChar(true)
-	Debug("debug")
+	tst.UseChar(true)
+	tst.Debug("debug")
 	if buf.String() != "abcD: debug\n" {
 		t.Errorf("write debug line: %q; want \"abcD: debug\n\"", buf.String())
 	}
 	buf.Reset()
-	Debugf("debugf: %d", 42)
+	tst.Debugf("debugf: %d", 42)
 	if buf.String() != "abcD: debugf: 42\n" {
 		t.Errorf("write debugf line: %q; want \"abcD: debugf: 42\n\"", buf.String())
 	}
 	buf.Reset()
-	Debugln("debugln:", 42)
+	tst.Debugln("debugln:", 42)
 	if buf.String() != "abcD: debugln: 42\n" {
 		t.Errorf("write debugln line: %q; want \"abcD: debugln: 42\n\"", buf.String())
 	}
 	buf.Reset()
-	SetLevel(LogNone)
+	tst.SetLevel(LogNone)
 	if std.level != LogNone {
 		t.Errorf("logger severity level: got %s, want %s", std.level, LogNone)
 	}
-	Error("error")
+	tst.Error("error")
 	if buf.Len() > 0 {
 		t.Errorf("write error line: expected no bytes to be written, %d were", buf.Len())
 	}
-	Info("info")
+	tst.Info("info")
 	if buf.Len() > 0 {
 		t.Errorf("write info line: expected no bytes to be written, %d were", buf.Len())
 	}
-	Debug("debug")
+	tst.Debug("debug")
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
 	}
@@ -465,4 +465,39 @@ func TestLogFilenameFormat(t *testing.T) {
 	if buf.String() != fmt.Sprintf("ezlog_test.go:464: DEBUG: %s\n", s) {
 		t.Errorf("debugln: got %q want \"ezlog_test.go:464: DEBUG: %s\n\"", buf.String(), s)
 	}
+}
+
+func TestPrint(t *testing.T) {
+	var buf bytes.Buffer
+	s := "Time is an illusion. Lunchtime double so."
+	SetOutput(&buf)
+	SetLevel(LogNone)
+	Print(s)
+	if buf.Len() > 0 {
+		t.Errorf("print: expected len to be 0; got %d", buf.Len())
+	}
+	Printf("%s", s)
+	if buf.Len() > 0 {
+		t.Errorf("printf: expected len to be 0; got %d", buf.Len())
+	}
+	Println(s)
+	if buf.Len() > 0 {
+		t.Errorf("println: expected len to be 0; got %d", buf.Len())
+	}
+	tst := New(LogDebug, &buf, "", 0)
+	tst.Print(s)
+	if buf.String() != fmt.Sprintf("%s\n", s) {
+		t.Errorf("print: got %q; want \"%s\n\"", buf.String(), s)
+	}
+	buf.Reset()
+	tst.Printf("%s", s)
+	if buf.String() != fmt.Sprintf("%s\n", s) {
+		t.Errorf("printf: got %q; want \"%s\n\"", buf.String(), s)
+	}
+	buf.Reset()
+	tst.Println(s)
+	if buf.String() != fmt.Sprintf("%s\n", s) {
+		t.Errorf("println: got %q; want \"%s\n\"", buf.String(), s)
+	}
+	buf.Reset()
 }
