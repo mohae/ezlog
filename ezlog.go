@@ -28,11 +28,11 @@
 // (LogDebug). Any log lines that are for log levels higher than the Logger's
 // set log level are discarded.
 //
-// Logger methods for generating output generate log line with either the Level
-// string, or the first character of the Level string, depending on if UseChar
-// has been set to true. Fatal function calls will result in FATAL, or F, being
-// added to the generated log line. Panic function calls will result in PANIC,
-// or P, being added to the generated log line.
+// Leveled log lines are written with the Error[f|ln], Info[f|ln], Debug[f|ln]
+// methods. In addition to the leveled log lines, two other types of prefixed
+// log lines can be written: Fatal[f|ln] and Panic[f|ln]. Log lines w/o levels
+// can be written with the Print[f|ln] methods. These methods will always
+// result in the log lines being written.
 package ezlog
 
 import (
@@ -169,8 +169,9 @@ func New(level Level, out io.Writer, prefix string, flag int) *Logger {
 	return &Logger{l: log.New(out, prefix, flag), level: level, useChar: 1}
 }
 
-// Error writes an error entry. If the logger's level is less than LogError,
-// the line will be discarded.
+// Error writes an error line to the logger. If the logger's level is less than
+// LogError, the line will be discarded. Arguments are handled in the manner of
+// fmt.Print.
 func (l *Logger) Error(v ...interface{}) {
 	if l.level < LogError {
 		return
@@ -179,9 +180,9 @@ func (l *Logger) Error(v ...interface{}) {
 	l.l.Print(v...)
 }
 
-// Errorf writes an error entry using the provided format and data. If the
-// level is less than LogError, the line will be discarded. Arguments are
-// handled in the manner of fmt.Printf.
+// Errorf writes an error line to the logger using the provided format and
+// data. If the level is less than LogError, the line will be discarded.
+// Arguments are handled in the manner of fmt.Printf.
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	if l.level < LogError {
 		return
@@ -189,8 +190,9 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	l.l.Printf(fmt.Sprintf("%s%s", l.levelString(LogError), format), v...)
 }
 
-// Info writes an info entry. If the level is less than LogInfo, the line will
-// be discarded.
+// Info writes an info entry to the logger. If the level is less than LogInfo,
+// the line will be discarded. Arguments are handled in the manner of
+// fmt.Print.
 func (l *Logger) Info(v ...interface{}) {
 	if l.level < LogInfo {
 		return
@@ -199,9 +201,9 @@ func (l *Logger) Info(v ...interface{}) {
 	l.l.Print(v...)
 }
 
-// Infof writes an info entry using the provided format and data. If the level
-// is less than LogInfo, the line will be discarded. Arguments are handled in
-// the manner of fmt.Printf.
+// Infof writes an info line to the logger using the provided format and data.
+// If the level is less than LogInfo, the line will be discarded. Arguments are
+// handled in the manner of fmt.Printf.
 func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.level < LogInfo {
 		return
@@ -209,8 +211,9 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 	l.l.Printf(fmt.Sprintf("%s%s", l.levelString(LogInfo), format), v...)
 }
 
-// Debug writes a debug entry to the log. If the level is less than LogDebug,
-// the line will be discarded.
+// Debug writes a debug line to the logger. If the level is less than LogDebug,
+// the line will be discarded. Arguments are handled in the manner of
+// fmt.Print.
 func (l *Logger) Debug(v ...interface{}) {
 	if l.level < LogDebug {
 		return
@@ -219,7 +222,7 @@ func (l *Logger) Debug(v ...interface{}) {
 	l.l.Print(v...)
 }
 
-// Debugf writes a debug entry to the log using the provided format and data.
+// Debugf writes a debug line to the logger using the provided format and data.
 // If the level is less than LogDebug, the line will be discarded. Arguments
 // are handled in the manner of fmt.Printf.
 func (l *Logger) Debugf(format string, v ...interface{}) {
@@ -229,25 +232,27 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 	l.l.Printf(fmt.Sprintf("%s%s", l.levelString(LogDebug), format), v...)
 }
 
-// Fatal writes a fatal entry to the log followed by a call to os.Exit(1).
+// Fatal writes a fatal line to the logger followed by a call to os.Exit(1).
+// Arguments are handled in the manner of fmt.Print.
 func (l *Logger) Fatal(v ...interface{}) {
 	v = append([]interface{}{l.levelString(logFatal)}, v...)
 	l.l.Fatal(v...)
 }
 
-// Fatalf writes a fatal entry to the log using the provided format and data
+// Fatalf writes a fatal line to the logger using the provided format and data
 // followed by a call to os.Exit(1).
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.l.Fatalf(fmt.Sprintf("%s%s", l.levelString(logFatal), format), v...)
 }
 
-// Panic writes a panic entry to the log followed by a call to panic().
+// Panic writes a panic line to the logger followed by a call to panic().
+// Arguments are handled in the manner of fmt.Print.
 func (l *Logger) Panic(v ...interface{}) {
 	v = append([]interface{}{l.levelString(LogDebug)}, v...)
 	l.l.Panic(v...)
 }
 
-// Panicf writes a panic entry to the log using the provided format and data
+// Panicf writes a panic line to the logger using the provided format and data
 // followed by a call to panic().
 func (l *Logger) Panicf(format string, v ...interface{}) {
 	l.l.Panicf(fmt.Sprintf("%s%s", l.levelString(logPanic), format), v...)
@@ -264,8 +269,8 @@ func (l *Logger) UseChar(b bool) {
 	atomic.StoreInt32(&l.useChar, i)
 }
 
-// SetLevel sets the maximum level for log output. Any log lines higher than
-// the Level will be discarded.
+// SetLevel sets the maximum level for the logger's output. Any log lines
+// whose levels are higher than the logger's level will be discarded.
 func (l *Logger) SetLevel(i Level) {
 	atomic.StoreInt32((*int32)(&l.level), int32(i))
 }
@@ -297,70 +302,76 @@ func (l *Logger) SetPrefix(prefix string) {
 	l.l.SetPrefix(prefix)
 }
 
-// Set the logger output.
+// Set sets the logger's output.
 func (l *Logger) SetOutput(w io.Writer) {
 	l.l.SetOutput(w)
 }
 
 var std = New(LogError, os.Stderr, "", log.LstdFlags)
 
-// Error writes an error entry. If the logger's level is less than LogError,
-// the line will be discarded.
+// Error writes an error entry to the standard logger. If the logger's level is
+// less than LogError, the line will be discarded. Arguments are handled in the
+// manner of fmt.Print.
 func Error(v ...interface{}) {
 	std.Error(v...)
 }
 
-// Errorf writes an error entry using the provided format and data. If the
-// level is less than LogError, the line will be discarded. Arguments are
-// handled in the manner of fmt.Printf.
+// Errorf writes an error entry to the standard logger using the provided
+// format and data. If the level is less than LogError, the line will be
+// discarded. Arguments are handled in the manner of fmt.Printf.
 func Errorf(format string, v ...interface{}) {
 	std.Errorf(format, v...)
 }
 
-// Info writes an info entry. If the level is less than LogInfo, the line will
-// be discarded.
+// Info writes an info entry to the standard logger. If the level is less than
+// LogInfo, the line will be discarded. Arguments are handled in the manner of
+// fmt.Print.
 func Info(v ...interface{}) {
 	std.Info(v...)
 }
 
-// Infof writes an info entry using the provided format and data. If the level
-// is less than LogInfo, the line will be discarded. Arguments are handled in
-// the manner of fmt.Printf.
+// Infof writes an info entry to the standard logger using the provided format
+// and data. If the level is less than LogInfo, the line will be discarded.
+// Arguments are handled in the manner of fmt.Printf.
 func Infof(format string, v ...interface{}) {
 	std.Infof(format, v...)
 }
 
-// Debug writes a debug entry to the log. If the level is less than LogDebug,
-// the line will be discarded.
+// Debug writes a debug entry to the stadard logger. If the level is less than
+// LogDebug, the line will be discarded. Arguments are handled in the manner of
+// fmt.Print.
 func Debug(v ...interface{}) {
 	std.Debug(v...)
 }
 
-// Debugf writes a debug entry to the log using the provided format and data.
-// If the level is less than LogDebug, the line will be discarded. Arguments
-// are handled in the manner of fmt.Printf.
+// Debugf writes a debug entry to the standard logger using the provided format
+// and data. If the level is less than LogDebug, the line will be discarded.
+// Arguments are handled in the manner of fmt.Printf.
 func Debugf(format string, v ...interface{}) {
 	std.Debugf(format, v...)
 }
 
-// Fatal writes a fatal entry to the log followed by a call to os.Exit(1).
+// Fatal writes a fatal entry to the standard logger followed by a call to
+// os.Exit(1). Arguments are handled in the manner of fmt.Print.
 func Fatal(v ...interface{}) {
 	std.Fatal(v...)
 }
 
-// Fatalf writes a fatal entry to the log using the provided format and data
-// followed by a call to os.Exit(1).
+// Fatalf writes a fatal entry to the standard logger using the provided format
+// and data followed by a call to os.Exit(1).
 func Fatalf(format string, v ...interface{}) {
 	std.Fatalf(format, v...)
 }
 
-// Panic writes a fatal entry to the log followed by a call to panic().
+// Panic writes a panic entry to the standard logger followed by a call to
+// panic(). Arguments are handled in the manner of fmt.Print.
 func Panic(v ...interface{}) {
 	std.Panic(v...)
 }
 
-// Panicf writes a panic entry to the log using the provided format and data
-// followed by a call to panic().
+// Panicf writes a panic entry to the standard logger using the provided format
+// and data followed by a call to panic(). Arguments are handled in the manner
+// of fmt.Printf.
 func Panicf(format string, v ...interface{}) {
 	std.Panicf(format, v...)
 }
@@ -373,7 +384,8 @@ func UseChar(b bool) {
 }
 
 // SetLevel sets the maximum level for the standard logger's log output. Any
-// log lines higher that the Level will be discarded.
+// log lines whose levels are higher than the standard logger's level will be
+// discarded.
 func SetLevel(i Level) {
 	std.SetLevel(i)
 }
