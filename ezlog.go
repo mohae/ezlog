@@ -177,7 +177,7 @@ func (l *Logger) Error(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogError), " "}, v...)
-	l.l.Print(v...)
+	l.l.Output(2, fmt.Sprint(v...))
 }
 
 // Errorf writes an error line to the logger using the provided format and
@@ -187,7 +187,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	if l.level < LogError {
 		return
 	}
-	l.l.Printf(fmt.Sprintf("%s %s", l.levelString(LogError), format), v...)
+	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogError), format), v...))
 }
 
 // Errorln writes an error line to the logger. If the logger's level is less
@@ -198,7 +198,7 @@ func (l *Logger) Errorln(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogError)}, v...)
-	l.l.Println(v...)
+	l.l.Output(2, fmt.Sprintln(v...))
 }
 
 // Info writes an info entry to the logger. If the level is less than LogInfo,
@@ -209,7 +209,7 @@ func (l *Logger) Info(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogInfo), " "}, v...)
-	l.l.Print(v...)
+	l.l.Output(2, fmt.Sprint(v...))
 }
 
 // Infof writes an info line to the logger using the provided format and data.
@@ -219,7 +219,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.level < LogInfo {
 		return
 	}
-	l.l.Printf(fmt.Sprintf("%s %s", l.levelString(LogInfo), format), v...)
+	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogInfo), format), v...))
 }
 
 // Infoln writes an info entry to the logger. If the level is less than
@@ -230,7 +230,7 @@ func (l *Logger) Infoln(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogInfo)}, v...)
-	l.l.Println(v...)
+	l.l.Output(2, fmt.Sprintln(v...))
 }
 
 // Debug writes a debug line to the logger. If the level is less than LogDebug,
@@ -241,7 +241,7 @@ func (l *Logger) Debug(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogDebug), " "}, v...)
-	l.l.Print(v...)
+	l.l.Output(2, fmt.Sprint(v...))
 }
 
 // Debugf writes a debug line to the logger using the provided format and data.
@@ -251,7 +251,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 	if l.level < LogDebug {
 		return
 	}
-	l.l.Printf(fmt.Sprintf("%s %s", l.levelString(LogDebug), format), v...)
+	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogDebug), format), v...))
 }
 
 // Debugln writes a debug line to the logger. If the level is less than
@@ -262,47 +262,56 @@ func (l *Logger) Debugln(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogDebug)}, v...)
-	l.l.Println(v...)
+	l.l.Output(2, fmt.Sprintln(v...))
 }
 
 // Fatal writes a fatal line to the logger followed by a call to os.Exit(1).
 // Arguments are handled in the manner of fmt.Print.
 func (l *Logger) Fatal(v ...interface{}) {
 	v = append([]interface{}{l.levelString(logFatal), " "}, v...)
-	l.l.Fatal(v...)
+	l.l.Output(2, fmt.Sprint(v...))
+	os.Exit(1)
 }
 
 // Fatalf writes a fatal line to the logger using the provided format and data
 // followed by a call to os.Exit(1).
 func (l *Logger) Fatalf(format string, v ...interface{}) {
-	l.l.Fatalf(fmt.Sprintf("%s %s", l.levelString(logFatal), format), v...)
+	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(logFatal), format), v...))
+	os.Exit(1)
 }
 
 // Fatalln writes a fatal line to the logger followed by a call to os.Exit(1).
 // Arguments are handled in the manner of fmt.Println.
 func (l *Logger) Fatalln(v ...interface{}) {
 	v = append([]interface{}{l.levelString(logFatal)}, v...)
-	l.l.Fatalln(v...)
+	l.l.Output(2, fmt.Sprintln(v...))
+	os.Exit(1)
 }
 
 // Panic writes a panic line to the logger followed by a call to panic().
 // Arguments are handled in the manner of fmt.Print.
 func (l *Logger) Panic(v ...interface{}) {
 	v = append([]interface{}{l.levelString(LogDebug), " "}, v...)
-	l.l.Panic(v...)
+	s := fmt.Sprint(v...)
+	l.l.Output(2, s)
+	panic(s)
 }
 
 // Panicf writes a panic line to the logger using the provided format and data
 // followed by a call to panic().
 func (l *Logger) Panicf(format string, v ...interface{}) {
-	l.l.Panicf(fmt.Sprintf("%s %s", l.levelString(logPanic), format), v...)
+	s := fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(logPanic), format), v...)
+	l.l.Output(2, s)
+	panic(s)
 }
 
 // Panicln writes a panic line to the logger followed by a call to panic().
 // Arguments are handled in the manner of fmt.Println.
 func (l *Logger) Panicln(v ...interface{}) {
 	v = append([]interface{}{l.levelString(LogDebug)}, v...)
-	l.l.Panicln(v...)
+	s := fmt.Sprintln(v...)
+	l.l.Output(2, s)
+	panic(s)
 }
 
 // UseChar sets if the logger's log line should use the first character of the

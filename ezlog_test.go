@@ -2,6 +2,7 @@ package ezlog
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"testing"
 )
@@ -412,5 +413,56 @@ func TestSetLogLevelPrefixFlags(t *testing.T) {
 	Debug("debug")
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
+	}
+}
+
+func TestLogFilenameFormat(t *testing.T) {
+	var buf bytes.Buffer
+	tst := New(LogDebug, &buf, "", Lshortfile)
+	s := "oh no Mr. Bill!"
+	g := "Gumby!!!"
+	tst.Error(s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:424: ERROR: %s\n", s) {
+		t.Errorf("error: got %q want \"ezlog_test.go:424: ERROR: %s\n\"", buf.String(), s)
+	}
+	buf.Reset()
+	tst.Errorf("%s %s", s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:429: ERROR: %s %s\n", s, g) {
+		t.Errorf("errorf: got %q want \"ezlog_test.go:429: ERROR: %s %s\n\"", buf.String(), s, g)
+	}
+	buf.Reset()
+	tst.Errorln(s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:434: ERROR: %s\n", s) {
+		t.Errorf("errorln: got %q want \"ezlog_test.go:434: ERROR: %s\n\"", buf.String(), s)
+	}
+	buf.Reset()
+	tst.Info(s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:439: INFO: %s\n", s) {
+		t.Errorf("info: got %q want \"ezlog_test.go:439: INFO: %s\n\"", buf.String(), s)
+	}
+	buf.Reset()
+	tst.Infof("%s %s", s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:444: INFO: %s %s\n", s, g) {
+		t.Errorf("infof: got %q want \"ezlog_test.go:444: INFO: %s %s\n\"", buf.String(), s, g)
+	}
+	buf.Reset()
+	tst.Infoln(s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:449: INFO: %s\n", s) {
+		t.Errorf("infoln: got %q want \"ezlog_test.go:449: INFO: %s\n\"", buf.String(), s)
+	}
+	buf.Reset()
+	tst.Debug(s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:454: DEBUG: %s\n", s) {
+		t.Errorf("debug: got %q want \"ezlog_test.go:454: DEBUG: %s\n\"", buf.String(), s)
+	}
+	buf.Reset()
+	tst.Debugf("%s %s", s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:459: DEBUG: %s %s\n", s, g) {
+		t.Errorf("debugf: got %q want \"ezlog_test.go:459: DEBUG: %s %s\n\"", buf.String(), s, g)
+	}
+	buf.Reset()
+	tst.Debugln(s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:464: DEBUG: %s\n", s) {
+		t.Errorf("debugln: got %q want \"ezlog_test.go:464: DEBUG: %s\n\"", buf.String(), s)
 	}
 }
