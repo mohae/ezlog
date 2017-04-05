@@ -362,7 +362,7 @@ func (l *Logger) SetLevel(i Level) {
 }
 
 func (l *Logger) levelString(i Level) string {
-	if l.useChar == 0 {
+	if atomic.LoadInt32(&l.useChar) == 0 {
 		return levelChar[i]
 	}
 	return levelName[i]
