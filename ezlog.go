@@ -157,7 +157,7 @@ func ParseLogFlag(s string) (l int, err error) {
 // level is <= the logger's level. This is safe for concurrent use.
 type Logger struct {
 	l       *log.Logger
-	level   Level
+	level   int32 // sync.AtomicInt32
 	useChar int32 // treated as a bool using Go's definiton for true/false; sync.AtomicInt32
 }
 
@@ -166,14 +166,14 @@ type Logger struct {
 // sets what each line will start with. The flag argument sets the logger's
 // properties.
 func New(level Level, out io.Writer, prefix string, flag int) *Logger {
-	return &Logger{l: log.New(out, prefix, flag), level: level, useChar: 1}
+	return &Logger{l: log.New(out, prefix, flag), level: int32(level), useChar: 1}
 }
 
 // Error writes an error line to the logger. If the logger's level is less than
 // LogError, the line will be discarded. Arguments are handled in the manner of
 // fmt.Print.
 func (l *Logger) Error(v ...interface{}) {
-	if l.level < LogError {
+	if atomic.LoadInt32(&l.level) < int32(LogError) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogError), " "}, v...)
@@ -184,7 +184,7 @@ func (l *Logger) Error(v ...interface{}) {
 // data. If the level is less than LogError, the line will be discarded.
 // Arguments are handled in the manner of fmt.Printf.
 func (l *Logger) Errorf(format string, v ...interface{}) {
-	if l.level < LogError {
+	if atomic.LoadInt32(&l.level) < int32(LogError) {
 		return
 	}
 	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogError), format), v...))
@@ -194,7 +194,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 // than LogError, the line will be discarded. Arguments are handled in the
 // manner of fmt.Println.
 func (l *Logger) Errorln(v ...interface{}) {
-	if l.level < LogError {
+	if atomic.LoadInt32(&l.level) < int32(LogError) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogError)}, v...)
@@ -205,7 +205,7 @@ func (l *Logger) Errorln(v ...interface{}) {
 // the line will be discarded. Arguments are handled in the manner of
 // fmt.Print.
 func (l *Logger) Info(v ...interface{}) {
-	if l.level < LogInfo {
+	if atomic.LoadInt32(&l.level) < int32(LogInfo) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogInfo), " "}, v...)
@@ -216,7 +216,7 @@ func (l *Logger) Info(v ...interface{}) {
 // If the level is less than LogInfo, the line will be discarded. Arguments are
 // handled in the manner of fmt.Printf.
 func (l *Logger) Infof(format string, v ...interface{}) {
-	if l.level < LogInfo {
+	if atomic.LoadInt32(&l.level) < int32(LogInfo) {
 		return
 	}
 	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogInfo), format), v...))
@@ -226,7 +226,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 // LogInfo, the line will be discarded. Arguments are handled in the manner of
 // fmt.Println.
 func (l *Logger) Infoln(v ...interface{}) {
-	if l.level < LogInfo {
+	if atomic.LoadInt32(&l.level) < int32(LogInfo) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogInfo)}, v...)
@@ -237,7 +237,7 @@ func (l *Logger) Infoln(v ...interface{}) {
 // the line will be discarded. Arguments are handled in the manner of
 // fmt.Print.
 func (l *Logger) Debug(v ...interface{}) {
-	if l.level < LogDebug {
+	if atomic.LoadInt32(&l.level) < int32(LogDebug) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogDebug), " "}, v...)
@@ -248,7 +248,7 @@ func (l *Logger) Debug(v ...interface{}) {
 // If the level is less than LogDebug, the line will be discarded. Arguments
 // are handled in the manner of fmt.Printf.
 func (l *Logger) Debugf(format string, v ...interface{}) {
-	if l.level < LogDebug {
+	if atomic.LoadInt32(&l.level) < int32(LogDebug) {
 		return
 	}
 	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogDebug), format), v...))
@@ -258,7 +258,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 // LogDebug, the line will be discarded. Arguments are handled in the manner of
 // fmt.Println.
 func (l *Logger) Debugln(v ...interface{}) {
-	if l.level < LogDebug {
+	if atomic.LoadInt32(&l.level) < int32(LogDebug) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogDebug)}, v...)
@@ -318,7 +318,7 @@ func (l *Logger) Panicln(v ...interface{}) {
 // the line will always be written. Arguments are handled in the manner of
 // fmt.Print.
 func (l *Logger) Print(v ...interface{}) {
-	if l.level <= LogNone {
+	if atomic.LoadInt32(&l.level) <= int32(LogNone) {
 		return
 	}
 	l.l.Output(2, fmt.Sprint(v...))
@@ -328,7 +328,7 @@ func (l *Logger) Print(v ...interface{}) {
 // LogNone, the line will always be written. Arguments are handled in the
 // manner of fmt.Printf.
 func (l *Logger) Printf(format string, v ...interface{}) {
-	if l.level <= LogNone {
+	if atomic.LoadInt32(&l.level) <= int32(LogNone) {
 		return
 	}
 	l.l.Output(2, fmt.Sprintf(format, v...))
@@ -338,7 +338,7 @@ func (l *Logger) Printf(format string, v ...interface{}) {
 // LogNone, the line will always be written. Arguments are handled in the
 // manner of fmt.Println.
 func (l *Logger) Println(v ...interface{}) {
-	if l.level <= LogNone {
+	if atomic.LoadInt32(&l.level) <= int32(LogNone) {
 		return
 	}
 	l.l.Output(2, fmt.Sprintln(v...))

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"sync/atomic"
 	"testing"
 )
 
@@ -399,7 +400,7 @@ func TestSetLogLevelPrefixFlags(t *testing.T) {
 	}
 	buf.Reset()
 	tst.SetLevel(LogNone)
-	if std.level != LogNone {
+	if atomic.LoadInt32(&std.level) != int32(LogNone) {
 		t.Errorf("logger severity level: got %s, want %s", std.level, LogNone)
 	}
 	tst.Error("error")
