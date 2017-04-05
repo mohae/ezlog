@@ -336,7 +336,7 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 	}
 	buf.Reset()
 	// change to use char
-	l.UseChar(true)
+	l.SetUseChar(true)
 	l.Error("error")
 	if buf.String() != "E: error\n" {
 		t.Errorf("write error line: got %q; want \"E: error\n\"", buf.String())
@@ -352,7 +352,7 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 		t.Errorf("write errorln line: got %q; want \"E: errorln: 42\n\"", buf.String())
 	}
 	buf.Reset()
-	l.UseChar(false)
+	l.SetUseChar(false)
 	l.Info("info")
 	if buf.String() != "INFO: info\n" {
 		t.Errorf("write info line: got %q; want \"INFO: info\n\"", buf.String())
@@ -434,7 +434,7 @@ func TestSetLogLevelPrefixFlags(t *testing.T) {
 	if p != "abc" {
 		t.Errorf("prefix: got %q; want \"abc\"", p)
 	}
-	tst.UseChar(true)
+	tst.SetUseChar(true)
 	tst.Debug("debug")
 	if buf.String() != "abcD: debug\n" {
 		t.Errorf("write debug line: %q; want \"abcD: debug\n\"", buf.String())
@@ -472,7 +472,23 @@ func TestPrint(t *testing.T) {
 	var buf bytes.Buffer
 	s := "Time is an illusion. Lunchtime double so."
 	SetOutput(&buf)
+	SetLevel(LogDebug)
+	l := GetLevel()
+	if l != LogDebug {
+		t.Errorf("level: got %s want %s", l, LogDebug)
+	}
 	SetLevel(LogNone)
+	SetUseChar(true)
+	b := UseChar()
+	if !b {
+		t.Errorf("usechar: got %v want true", b)
+	}
+	SetUseChar(false)
+	b = UseChar()
+	if b {
+		t.Errorf("usechar: got %v want false", b)
+	}
+
 	Print(s)
 	if buf.Len() > 0 {
 		t.Errorf("print: expected len to be 0; got %d", buf.Len())

@@ -344,15 +344,19 @@ func (l *Logger) Println(v ...interface{}) {
 	l.l.Output(2, fmt.Sprintln(v...))
 }
 
-// UseChar sets if the logger's log line should use the first character of the
-// Level name. When false, the default, the full name of the Level will be
-// used.
-func (l *Logger) UseChar(b bool) {
-	var i int32
-	if !b {
-		i = 1 // For Go, false is defined as 0 != 0
-	}
-	atomic.StoreInt32(&l.useChar, i)
+// Flags returns the logger's output flags.
+func (l *Logger) Flags() int {
+	return l.l.Flags()
+}
+
+// SetFlags sets the logger's flags.
+func (l *Logger) SetFlags(flags int) {
+	l.l.SetFlags(flags)
+}
+
+// GetLevel returns the logger's level.
+func (l *Logger) GetLevel() Level {
+	return Level(atomic.LoadInt32(&l.level))
 }
 
 // SetLevel sets the maximum level for the logger's output. Any log lines
@@ -361,16 +365,9 @@ func (l *Logger) SetLevel(i Level) {
 	atomic.StoreInt32((*int32)(&l.level), int32(i))
 }
 
-func (l *Logger) levelString(i Level) string {
-	if atomic.LoadInt32(&l.useChar) == 0 {
-		return levelChar[i]
-	}
-	return levelName[i]
-}
-
-// Flags returns the logger's output flags.
-func (l *Logger) Flags() int {
-	return l.l.Flags()
+// SetOutput sets the logger's output.
+func (l *Logger) SetOutput(w io.Writer) {
+	l.l.SetOutput(w)
 }
 
 // Prefix returns the logger's prefix.
@@ -378,19 +375,36 @@ func (l *Logger) Prefix() string {
 	return l.l.Prefix()
 }
 
-// SetFlags sets the logger's flags.
-func (l *Logger) SetFlags(flags int) {
-	l.l.SetFlags(flags)
-}
-
 // SetPrefix sets the logger's prefix.
 func (l *Logger) SetPrefix(prefix string) {
 	l.l.SetPrefix(prefix)
 }
 
-// SetOutput sets the logger's output.
-func (l *Logger) SetOutput(w io.Writer) {
-	l.l.SetOutput(w)
+// UseChar returns if the logger is using the first character of the level's
+// name for log lines.
+func (l *Logger) UseChar() bool {
+	if atomic.LoadInt32(&l.useChar) == 0 {
+		return true
+	}
+	return false
+}
+
+// SetUseChar sets if the logger's log line should use the first character of
+// the Level name. When false, the default, the full name of the Level will be
+// used.
+func (l *Logger) SetUseChar(b bool) {
+	var i int32
+	if !b {
+		i = 1 // For Go, false is defined as 0 != 0
+	}
+	atomic.StoreInt32(&l.useChar, i)
+}
+
+func (l *Logger) levelString(i Level) string {
+	if atomic.LoadInt32(&l.useChar) == 0 {
+		return levelChar[i]
+	}
+	return levelName[i]
 }
 
 var std = New(LogError, os.Stderr, "", log.LstdFlags)
@@ -516,11 +530,19 @@ func Println(v ...interface{}) {
 	std.Println(v...)
 }
 
-// UseChar sets if the standard logger's log line should use the first
-// character of the Level name. When false, the default, the full name of the
-// Level will be used.
-func UseChar(b bool) {
-	std.UseChar(b)
+// Flags returns the standard logger's output flags.
+func Flags() int {
+	return std.l.Flags()
+}
+
+// SetFlags sets the standard logger's flags.
+func SetFlags(flags int) {
+	std.l.SetFlags(flags)
+}
+
+// GetLevel returns the standard logger's level.
+func GetLevel() Level {
+	return std.GetLevel()
 }
 
 // SetLevel sets the maximum level for the standard logger's log output. Any
@@ -530,9 +552,9 @@ func SetLevel(i Level) {
 	std.SetLevel(i)
 }
 
-// Flags returns the standard logger's output flags.
-func Flags() int {
-	return std.l.Flags()
+// SetOutput sets the standard logger's output destination.
+func SetOutput(w io.Writer) {
+	std.SetOutput(w)
 }
 
 // Prefix returns the standrd logger's prefix.
@@ -540,17 +562,20 @@ func Prefix() string {
 	return std.l.Prefix()
 }
 
-// SetFlags sets the standard logger's flags.
-func SetFlags(flags int) {
-	std.l.SetFlags(flags)
-}
-
 // SetPrefix sets the standard logger's prefix.
 func SetPrefix(prefix string) {
 	std.l.SetPrefix(prefix)
 }
 
-// SetOutput sets the standard logger's output destination.
-func SetOutput(w io.Writer) {
-	std.SetOutput(w)
+// UseChar returns if the standard logger is using the first character of the
+// level's name for log lines.
+func UseChar() bool {
+	return std.UseChar()
+}
+
+// SetUseChar sets if the standard logger's log line should use the first
+// character of the Level name. When false, the default, the full name of the
+// Level will be used.
+func SetUseChar(b bool) {
+	std.SetUseChar(b)
 }
