@@ -87,6 +87,10 @@ func TestNoneLogger(t *testing.T) {
 	if buf.Len() > 0 {
 		t.Errorf("write errorf line: expected no bytes to be written, %d were", buf.Len())
 	}
+	l.Errorln("error")
+	if buf.Len() > 0 {
+		t.Errorf("write error line: expected no bytes to be written, %d were", buf.Len())
+	}
 	l.Info("info")
 	if buf.Len() > 0 {
 		t.Errorf("write info line: expected no bytes to be written, %d were", buf.Len())
@@ -95,11 +99,19 @@ func TestNoneLogger(t *testing.T) {
 	if buf.Len() > 0 {
 		t.Errorf("write infof line: expected no bytes to be written, %d were", buf.Len())
 	}
+	l.Infoln("info")
+	if buf.Len() > 0 {
+		t.Errorf("write info line: expected no bytes to be written, %d were", buf.Len())
+	}
 	l.Debug("debug")
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
 	}
 	l.Debugf("debugf: %d", 42)
+	if buf.Len() > 0 {
+		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
+	}
+	l.Debug("debug")
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
 	}
@@ -118,6 +130,11 @@ func TestErrorLogger(t *testing.T) {
 		t.Errorf("write error line: got %q; want \"ERROR: errorf: 42 zaphod\n\"", buf.String())
 	}
 	buf.Reset()
+	l.Errorln("errorln", 42)
+	if buf.String() != "ERROR: errorln 42\n" {
+		t.Errorf("write errorln line: got %q; want \"ERROR: errorln 42\n\"", buf.String())
+	}
+	buf.Reset()
 	l.Info("info")
 	if buf.Len() > 0 {
 		t.Errorf("write info line: expected no bytes to be written, %d were", buf.Len())
@@ -126,6 +143,10 @@ func TestErrorLogger(t *testing.T) {
 	if buf.Len() > 0 {
 		t.Errorf("write infof line: expected no bytes to be written, %d were", buf.Len())
 	}
+	l.Infoln("infoln")
+	if buf.Len() > 0 {
+		t.Errorf("write infoln line: expected no bytes to be written, %d were", buf.Len())
+	}
 	l.Debug("debug")
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
@@ -133,6 +154,10 @@ func TestErrorLogger(t *testing.T) {
 	l.Debugf("debugf: %d", 42)
 	if buf.Len() > 0 {
 		t.Errorf("write debugf line: expected no bytes to be written, %d were", buf.Len())
+	}
+	l.Debugln("debugln")
+	if buf.Len() > 0 {
+		t.Errorf("write debugln line: expected no bytes to be written, %d were", buf.Len())
 	}
 }
 
@@ -149,6 +174,11 @@ func TestInfoLogger(t *testing.T) {
 		t.Errorf("write error line: got %q; want \"ERROR: errorf: 42\n\"", buf.String())
 	}
 	buf.Reset()
+	l.Errorln("errorln:", 42)
+	if buf.String() != "ERROR: errorln: 42\n" {
+		t.Errorf("write errorln line: got %q; want \"ERROR: errorln: 42\n\"", buf.String())
+	}
+	buf.Reset()
 	l.Info("info", "trillian", "arthur")
 	if buf.String() != "INFO: infotrillianarthur\n" {
 		t.Errorf("write info line: got %q; want \"INFO: infotrillianarthur\n\"", buf.String())
@@ -159,6 +189,11 @@ func TestInfoLogger(t *testing.T) {
 		t.Errorf("write info line: got %q; want \"INFO: infof: 42 11\n\"", buf.String())
 	}
 	buf.Reset()
+	l.Infoln("infoln:", 42, 11)
+	if buf.String() != "INFO: infoln: 42 11\n" {
+		t.Errorf("write infoln line: got %q; want \"INFO: infoln: 42 11\n\"", buf.String())
+	}
+	buf.Reset()
 	l.Debug("debug")
 	if buf.Len() > 0 {
 		t.Errorf("write debug line: expected no bytes to be written, %d were", buf.Len())
@@ -167,6 +202,11 @@ func TestInfoLogger(t *testing.T) {
 	if buf.Len() > 0 {
 		t.Errorf("write debugf line: expected no bytes to be written, %d were", buf.Len())
 	}
+	l.Debug("debugln")
+	if buf.Len() > 0 {
+		t.Errorf("write debugln line: expected no bytes to be written, %d were", buf.Len())
+	}
+
 }
 
 func TestDebugLogger(t *testing.T) {
@@ -182,6 +222,11 @@ func TestDebugLogger(t *testing.T) {
 		t.Errorf("write error line: got %q; want \"ERROR: errorf: 42\n\"", buf.String())
 	}
 	buf.Reset()
+	l.Errorln("errorln:", 42)
+	if buf.String() != "ERROR: errorln: 42\n" {
+		t.Errorf("write errorln line: got %q; want \"ERROR: errorln: 42\n\"", buf.String())
+	}
+	buf.Reset()
 	l.Info("info")
 	if buf.String() != "INFO: info\n" {
 		t.Errorf("write info line: got %q; want \"INFO: info\n\"", buf.String())
@@ -192,6 +237,11 @@ func TestDebugLogger(t *testing.T) {
 		t.Errorf("write info line: got %q; want \"INFO: infof: 42\n\"", buf.String())
 	}
 	buf.Reset()
+	l.Infoln("infoln:", 42)
+	if buf.String() != "INFO: infoln: 42\n" {
+		t.Errorf("write infoln line: got %q; want \"INFO: infoln: 42\n\"", buf.String())
+	}
+	buf.Reset()
 	l.Debug("debug", "hoopy", "frood")
 	if buf.String() != "DEBUG: debughoopyfrood\n" {
 		t.Errorf("write debug line: %q; want \"DEBUG: debughoopyfrood\n\"", buf.String())
@@ -200,6 +250,11 @@ func TestDebugLogger(t *testing.T) {
 	l.Debugf("debugf: %d %d", 42, 1999)
 	if buf.String() != "DEBUG: debugf: 42 1999\n" {
 		t.Errorf("write debug line: %q; want \"DEBUG: debugf: 42 1999\n\"", buf.String())
+	}
+	buf.Reset()
+	l.Debugln("debugln:", 42, 1999)
+	if buf.String() != "DEBUG: debugln: 42 1999\n" {
+		t.Errorf("write debugln line: %q; want \"DEBUG: debugln: 42 1999\n\"", buf.String())
 	}
 }
 
@@ -222,6 +277,11 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 		t.Errorf("write error line: got %q; want \"ERROR: errorf: 42\n\"", buf.String())
 	}
 	buf.Reset()
+	l.Errorln("errorln:", 42)
+	if buf.String() != "ERROR: errorln: 42\n" {
+		t.Errorf("write errorln line: got %q; want \"ERROR: errorln: 42\n\"", buf.String())
+	}
+	buf.Reset()
 	// change to use char
 	l.UseChar(true)
 	l.Error("error")
@@ -234,6 +294,11 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 		t.Errorf("write error line: got %q; want \"E: errorf: 42\n\"", buf.String())
 	}
 	buf.Reset()
+	l.Errorln("errorln:", 42)
+	if buf.String() != "E: errorln: 42\n" {
+		t.Errorf("write errorln line: got %q; want \"E: errorln: 42\n\"", buf.String())
+	}
+	buf.Reset()
 	l.UseChar(false)
 	l.Info("info")
 	if buf.String() != "INFO: info\n" {
@@ -243,6 +308,11 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 	l.Infof("infof: %d", 42)
 	if buf.String() != "INFO: infof: 42\n" {
 		t.Errorf("write info line: got %q; want \"INFO: infof: 42\n\"", buf.String())
+	}
+	buf.Reset()
+	l.Infoln("infoln:", 42)
+	if buf.String() != "INFO: infoln: 42\n" {
+		t.Errorf("write infoln line: got %q; want \"INFO: infoln: 42\n\"", buf.String())
 	}
 	l.SetPrefix("xyz")
 	p := l.Prefix()
@@ -258,6 +328,11 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 	l.Debugf("debugf: %d", 42)
 	if buf.String() != "xyzDEBUG: debugf: 42\n" {
 		t.Errorf("write debug line: %q; want \"xyzDEBUG: debugf: 42\n\"", buf.String())
+	}
+	buf.Reset()
+	l.Debugln("debugln:", 42)
+	if buf.String() != "xyzDEBUG: debugln: 42\n" {
+		t.Errorf("write debugln line: %q; want \"xyzDEBUG: debugln: 42\n\"", buf.String())
 	}
 }
 
@@ -281,6 +356,11 @@ func TestSetLogLevelPrefixFlags(t *testing.T) {
 		t.Errorf("write errorf line: got %q; want \"ERROR: errorf: 42 eleven\n\"", buf.String())
 	}
 	buf.Reset()
+	Errorln("errorln:", 42, "eleven")
+	if buf.String() != "ERROR: errorln: 42 eleven\n" {
+		t.Errorf("write errorln line: got %q; want \"ERROR: errorln: 42 eleven\n\"", buf.String())
+	}
+	buf.Reset()
 	Info("info")
 	if buf.String() != "INFO: info\n" {
 		t.Errorf("write info line: got %q; want \"INFO: info\n\"", buf.String())
@@ -289,6 +369,11 @@ func TestSetLogLevelPrefixFlags(t *testing.T) {
 	Infof("infof: %d", 42)
 	if buf.String() != "INFO: infof: 42\n" {
 		t.Errorf("write infof line: got %q; want \"INFO: infof: 42\n\"", buf.String())
+	}
+	buf.Reset()
+	Infoln("infoln:", 42)
+	if buf.String() != "INFO: infoln: 42\n" {
+		t.Errorf("write infoln line: got %q; want \"INFO: infoln: 42\n\"", buf.String())
 	}
 	buf.Reset()
 	SetPrefix("abc")
@@ -305,6 +390,11 @@ func TestSetLogLevelPrefixFlags(t *testing.T) {
 	Debugf("debugf: %d", 42)
 	if buf.String() != "abcD: debugf: 42\n" {
 		t.Errorf("write debugf line: %q; want \"abcD: debugf: 42\n\"", buf.String())
+	}
+	buf.Reset()
+	Debugln("debugln:", 42)
+	if buf.String() != "abcD: debugln: 42\n" {
+		t.Errorf("write debugln line: %q; want \"abcD: debugln: 42\n\"", buf.String())
 	}
 	buf.Reset()
 	SetLevel(LogNone)
