@@ -25,8 +25,8 @@
 //
 // In addition to LogNone, which discards all log lines, three common log
 // levels are supported: error (LogError), info (LogInfo), and debug
-// (LogDebug). Any log lines that are for log levels higher than the Logger's
-// set log level are discarded.
+// (LogDebug). Any log lines that are for log levels higher than the logger's
+// log level are discarded.
 //
 // Leveled log lines are written with the Error[f|ln], Info[f|ln], Debug[f|ln]
 // methods. Aside from the leveled log lines, two other types of prefixed log
@@ -76,6 +76,20 @@ const (
 	logPanic
 )
 
+func (l Level) String() string {
+	return levelName[l]
+}
+
+// LevelStringType is the type of string output that will be used for the log
+// level.
+type LevelStringType int
+
+const (
+	Full  LevelStringType = iota // use the level's full name
+	Short                        // use the level's short description
+	Char                         // use the first character of the level's name
+)
+
 var levelChar = []string{
 	LogNone:  "NONE:", // this is the fullword because it should never be used
 	LogError: "E:",
@@ -85,6 +99,15 @@ var levelChar = []string{
 	logPanic: "P:",
 }
 
+var levelShort = []string{
+	LogNone:  "NONE:",
+	LogError: "ERR:",
+	LogInfo:  "INF:",
+	LogDebug: "DBG:",
+	logFatal: "FATAL:",
+	logPanic: "PANIC:",
+}
+
 var levelName = []string{
 	LogNone:  "NONE:",
 	LogError: "ERROR:",
@@ -92,10 +115,6 @@ var levelName = []string{
 	LogDebug: "DEBUG:",
 	logFatal: "FATAL:",
 	logPanic: "PANIC:",
-}
-
-func (l Level) String() string {
-	return levelName[l]
 }
 
 // LevelByName gets the Level corresponding to s. A false will be returned if s
@@ -156,17 +175,18 @@ func ParseLogFlag(s string) (l int, err error) {
 // Logger generates leveled log lines of output to an io.Writer if the log
 // level is <= the logger's level. This is safe for concurrent use.
 type Logger struct {
-	l       *log.Logger
-	level   int32 // sync.AtomicInt32
-	useChar int32 // treated as a bool using Go's definiton for true/false; sync.AtomicInt32
+	l          *log.Logger
+	level      int32 // sync.AtomicInt32
+	stringType int32 // sync.AtomicInt32
 }
 
 // New creates a new Logger. The level argument sets the Logger's log level.
-// The out argument sets the log data output destination. The prefix argument
-// sets what each line will start with. The flag argument sets the logger's
-// properties.
-func New(level Level, out io.Writer, prefix string, flag int) *Logger {
-	return &Logger{l: log.New(out, prefix, flag), level: int32(level), useChar: 1}
+// The levelStringType is what should be used for the level's name: the first
+// character, Char, the short version, Short, or the full name, Full. The out
+// argument sets the log data output destination. The prefix argument sets what
+// each line will start with. The flag argument sets the logger's properties.
+func New(level Level, levelStringType LevelStringType, out io.Writer, prefix string, flag int) *Logger {
+	return &Logger{l: log.New(out, prefix, flag), level: int32(level), stringType: int32(levelStringType)}
 }
 
 // Error writes an error line to the logger. If the logger's level is less than
@@ -380,34 +400,33 @@ func (l *Logger) SetPrefix(prefix string) {
 	l.l.SetPrefix(prefix)
 }
 
-// UseChar returns if the logger is using the first character of the level's
-// name for log lines.
-func (l *Logger) UseChar() bool {
-	if atomic.LoadInt32(&l.useChar) == 0 {
-		return true
-	}
-	return false
+// GetLevelStringType returns what the logger is using for the error level
+// name (string) in log lines.
+func (l *Logger) GetLevelStringType() LevelStringType {
+	return LevelStringType(atomic.LoadInt32(&l.stringType))
 }
 
-// SetUseChar sets if the logger's log line should use the first character of
-// the Level name. When false, the default, the full name of the Level will be
-// used.
-func (l *Logger) SetUseChar(b bool) {
-	var i int32
-	if !b {
-		i = 1 // For Go, false is defined as 0 != 0
-	}
-	atomic.StoreInt32(&l.useChar, i)
+// SetLevelStringType sets what the logger should use for the level name
+// (string) in log lines.
+func (l *Logger) SetLevelStringType(v LevelStringType) {
+	atomic.StoreInt32((*int32)(&l.stringType), int32(v))
 }
 
 func (l *Logger) levelString(i Level) string {
-	if atomic.LoadInt32(&l.useChar) == 0 {
+	v := LevelStringType(atomic.LoadInt32(&l.stringType))
+	switch v {
+	case Full:
+		return levelName[i]
+	case Char:
 		return levelChar[i]
+	case Short:
+		return levelShort[i]
 	}
-	return levelName[i]
+	// unknown level results in an empty string
+	return ""
 }
 
-var std = New(LogError, os.Stderr, "", log.LstdFlags)
+var std = New(LogError, Full, os.Stderr, "", log.LstdFlags)
 
 // Error writes an error entry to the standard logger. If the logger's level is
 // less than LogError, the line will be discarded. Arguments are handled in the
@@ -567,15 +586,14 @@ func SetPrefix(prefix string) {
 	std.l.SetPrefix(prefix)
 }
 
-// UseChar returns if the standard logger is using the first character of the
-// level's name for log lines.
-func UseChar() bool {
-	return std.UseChar()
+// GetLevelStringType returns what the standard logger is using for the error
+// level name (string) in log lines.
+func GetLevelStringType() LevelStringType {
+	return std.GetLevelStringType()
 }
 
-// SetUseChar sets if the standard logger's log line should use the first
-// character of the Level name. When false, the default, the full name of the
-// Level will be used.
-func SetUseChar(b bool) {
-	std.SetUseChar(b)
+// SetLevelStringType sets what the standard logger should use for the level
+// name (string) in log lines.
+func SetLevelStringType(v LevelStringType) {
+	std.SetLevelStringType(v)
 }

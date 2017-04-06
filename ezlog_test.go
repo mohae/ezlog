@@ -4,58 +4,57 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"sync/atomic"
 	"testing"
 )
 
 func TestLogFilenameFormat(t *testing.T) {
 	var buf bytes.Buffer
-	tst := New(LogDebug, &buf, "", Lshortfile)
+	tst := New(LogDebug, Full, &buf, "", Lshortfile)
 	s := "oh no Mr. Bill!"
 	g := "Gumby!!!"
 	tst.Error(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:16: ERROR: %s\n", s) {
-		t.Errorf("error: got %q want \"ezlog_test.go:16: ERROR: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:15: ERROR: %s\n", s) {
+		t.Errorf("error: got %q want \"ezlog_test.go:15: ERROR: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Errorf("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:21: ERROR: %s %s\n", s, g) {
-		t.Errorf("errorf: got %q want \"ezlog_test.go:21: ERROR: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:20: ERROR: %s %s\n", s, g) {
+		t.Errorf("errorf: got %q want \"ezlog_test.go:20: ERROR: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Errorln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:26: ERROR: %s\n", s) {
-		t.Errorf("errorln: got %q want \"ezlog_test.go:26: ERROR: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:25: ERROR: %s\n", s) {
+		t.Errorf("errorln: got %q want \"ezlog_test.go:25: ERROR: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Info(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:31: INFO: %s\n", s) {
-		t.Errorf("info: got %q want \"ezlog_test.go:31: INFO: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:30: INFO: %s\n", s) {
+		t.Errorf("info: got %q want \"ezlog_test.go:30: INFO: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Infof("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:36: INFO: %s %s\n", s, g) {
-		t.Errorf("infof: got %q want \"ezlog_test.go:36: INFO: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:35: INFO: %s %s\n", s, g) {
+		t.Errorf("infof: got %q want \"ezlog_test.go:35: INFO: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Infoln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:41: INFO: %s\n", s) {
-		t.Errorf("infoln: got %q want \"ezlog_test.go:41: INFO: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:40: INFO: %s\n", s) {
+		t.Errorf("infoln: got %q want \"ezlog_test.go:40: INFO: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Debug(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:46: DEBUG: %s\n", s) {
-		t.Errorf("debug: got %q want \"ezlog_test.go:46: DEBUG: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:45: DEBUG: %s\n", s) {
+		t.Errorf("debug: got %q want \"ezlog_test.go:45: DEBUG: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Debugf("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:51: DEBUG: %s %s\n", s, g) {
-		t.Errorf("debugf: got %q want \"ezlog_test.go:51: DEBUG: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:50: DEBUG: %s %s\n", s, g) {
+		t.Errorf("debugf: got %q want \"ezlog_test.go:50: DEBUG: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Debugln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:56: DEBUG: %s\n", s) {
-		t.Errorf("debugln: got %q want \"ezlog_test.go:56: DEBUG: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:55: DEBUG: %s\n", s) {
+		t.Errorf("debugln: got %q want \"ezlog_test.go:55: DEBUG: %s\n\"", buf.String(), s)
 	}
 }
 
@@ -172,19 +171,19 @@ func TestNoneLogger(t *testing.T) {
 
 func TestErrorLogger(t *testing.T) {
 	var buf bytes.Buffer
-	l := New(LogError, &buf, "", 0)
+	l := New(LogError, Short, &buf, "", 0)
 	l.Error("error", 42)
-	if buf.String() != "ERROR: error42\n" {
+	if buf.String() != "ERR: error42\n" {
 		t.Errorf("write error line: got %q; want \"ERROR: error42\n\"", buf.String())
 	}
 	buf.Reset()
 	l.Errorf("errorf: %d %s", 42, "zaphod")
-	if buf.String() != "ERROR: errorf: 42 zaphod\n" {
+	if buf.String() != "ERR: errorf: 42 zaphod\n" {
 		t.Errorf("write error line: got %q; want \"ERROR: errorf: 42 zaphod\n\"", buf.String())
 	}
 	buf.Reset()
 	l.Errorln("errorln", 42)
-	if buf.String() != "ERROR: errorln 42\n" {
+	if buf.String() != "ERR: errorln 42\n" {
 		t.Errorf("write errorln line: got %q; want \"ERROR: errorln 42\n\"", buf.String())
 	}
 	buf.Reset()
@@ -216,7 +215,7 @@ func TestErrorLogger(t *testing.T) {
 
 func TestInfoLogger(t *testing.T) {
 	var buf bytes.Buffer
-	l := New(LogInfo, &buf, "", 0)
+	l := New(LogInfo, Full, &buf, "", 0)
 	l.Error("error")
 	if buf.String() != "ERROR: error\n" {
 		t.Errorf("write error line: got %q; want \"ERROR: error\n\"", buf.String())
@@ -264,7 +263,7 @@ func TestInfoLogger(t *testing.T) {
 
 func TestDebugLogger(t *testing.T) {
 	var buf bytes.Buffer
-	l := New(LogDebug, &buf, "", 0)
+	l := New(LogDebug, Full, &buf, "", 0)
 	l.Error("error")
 	if buf.String() != "ERROR: error\n" {
 		t.Errorf("write error line: got %q; want \"ERROR: error\n\"", buf.String())
@@ -313,7 +312,7 @@ func TestDebugLogger(t *testing.T) {
 
 func TestUseCharFlagsPrefix(t *testing.T) {
 	var buf bytes.Buffer
-	l := New(LogDebug, &buf, "", 0)
+	l := New(LogDebug, Full, &buf, "", 0)
 	l.SetFlags(LstdFlags)
 	f := l.Flags()
 	if f != LstdFlags {
@@ -336,7 +335,7 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 	}
 	buf.Reset()
 	// change to use char
-	l.SetUseChar(true)
+	l.SetLevelStringType(Char)
 	l.Error("error")
 	if buf.String() != "E: error\n" {
 		t.Errorf("write error line: got %q; want \"E: error\n\"", buf.String())
@@ -352,20 +351,20 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 		t.Errorf("write errorln line: got %q; want \"E: errorln: 42\n\"", buf.String())
 	}
 	buf.Reset()
-	l.SetUseChar(false)
+	l.SetLevelStringType(Short)
 	l.Info("info")
-	if buf.String() != "INFO: info\n" {
-		t.Errorf("write info line: got %q; want \"INFO: info\n\"", buf.String())
+	if buf.String() != "INF: info\n" {
+		t.Errorf("write info line: got %q; want \"INF: info\n\"", buf.String())
 	}
 	buf.Reset()
 	l.Infof("infof: %d", 42)
-	if buf.String() != "INFO: infof: 42\n" {
-		t.Errorf("write info line: got %q; want \"INFO: infof: 42\n\"", buf.String())
+	if buf.String() != "INF: infof: 42\n" {
+		t.Errorf("write info line: got %q; want \"INF: infof: 42\n\"", buf.String())
 	}
 	buf.Reset()
 	l.Infoln("infoln:", 42)
-	if buf.String() != "INFO: infoln: 42\n" {
-		t.Errorf("write infoln line: got %q; want \"INFO: infoln: 42\n\"", buf.String())
+	if buf.String() != "INF: infoln: 42\n" {
+		t.Errorf("write infoln line: got %q; want \"INF: infoln: 42\n\"", buf.String())
 	}
 	l.SetPrefix("xyz")
 	p := l.Prefix()
@@ -374,17 +373,17 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 	}
 	buf.Reset()
 	l.Debug("debug")
-	if buf.String() != "xyzDEBUG: debug\n" {
+	if buf.String() != "xyzDBG: debug\n" {
 		t.Errorf("write debug line: %q; want \"xyzDEBUG: debugf: 42\n\"", buf.String())
 	}
 	buf.Reset()
 	l.Debugf("debugf: %d", 42)
-	if buf.String() != "xyzDEBUG: debugf: 42\n" {
+	if buf.String() != "xyzDBG: debugf: 42\n" {
 		t.Errorf("write debug line: %q; want \"xyzDEBUG: debugf: 42\n\"", buf.String())
 	}
 	buf.Reset()
 	l.Debugln("debugln:", 42)
-	if buf.String() != "xyzDEBUG: debugln: 42\n" {
+	if buf.String() != "xyzDBG: debugln: 42\n" {
 		t.Errorf("write debugln line: %q; want \"xyzDEBUG: debugln: 42\n\"", buf.String())
 	}
 }
@@ -392,7 +391,7 @@ func TestUseCharFlagsPrefix(t *testing.T) {
 // This also tests the package global logger
 func TestSetLogLevelPrefixFlags(t *testing.T) {
 	var buf bytes.Buffer
-	tst := New(LogDebug, &buf, "", Lshortfile)
+	tst := New(LogDebug, Full, &buf, "", Lshortfile)
 	tst.SetFlags(0)
 	f := tst.Flags()
 	if f != 0 {
@@ -434,7 +433,7 @@ func TestSetLogLevelPrefixFlags(t *testing.T) {
 	if p != "abc" {
 		t.Errorf("prefix: got %q; want \"abc\"", p)
 	}
-	tst.SetUseChar(true)
+	tst.SetLevelStringType(Char)
 	tst.Debug("debug")
 	if buf.String() != "abcD: debug\n" {
 		t.Errorf("write debug line: %q; want \"abcD: debug\n\"", buf.String())
@@ -451,8 +450,8 @@ func TestSetLogLevelPrefixFlags(t *testing.T) {
 	}
 	buf.Reset()
 	tst.SetLevel(LogNone)
-	if atomic.LoadInt32(&std.level) != int32(LogNone) {
-		t.Errorf("logger severity level: got %s, want %s", std.level, LogNone)
+	if tst.GetLevel() != LogNone {
+		t.Errorf("logger severity level: got %s, want %s", tst.GetLevel(), LogNone)
 	}
 	tst.Error("error")
 	if buf.Len() > 0 {
@@ -478,15 +477,15 @@ func TestPrint(t *testing.T) {
 		t.Errorf("level: got %s want %s", l, LogDebug)
 	}
 	SetLevel(LogNone)
-	SetUseChar(true)
-	b := UseChar()
-	if !b {
-		t.Errorf("usechar: got %v want true", b)
+	SetLevelStringType(Short)
+	v := GetLevelStringType()
+	if v != Short {
+		t.Errorf("GetSetLevelStringType: got %v want %v", v, Short)
 	}
-	SetUseChar(false)
-	b = UseChar()
-	if b {
-		t.Errorf("usechar: got %v want false", b)
+	SetLevelStringType(Full)
+	v = GetLevelStringType()
+	if v != Full {
+		t.Errorf("GetSetLevelStringType: got %v want %v", v, Full)
 	}
 
 	Print(s)
@@ -511,7 +510,7 @@ func TestPrint(t *testing.T) {
 	if f != Lshortfile {
 		t.Errorf("got %d; want %d", f, Lshortfile)
 	}
-	tst := New(LogDebug, &buf, "", 0)
+	tst := New(LogDebug, Short, &buf, "", 0)
 	tst.Print(s)
 	if buf.String() != fmt.Sprintf("%s\n", s) {
 		t.Errorf("print: got %q; want \"%s\n\"", buf.String(), s)
