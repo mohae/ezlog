@@ -3,7 +3,6 @@ package ezlog
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"testing"
 )
 
@@ -13,48 +12,48 @@ func TestLogFilenameFormat(t *testing.T) {
 	s := "oh no Mr. Bill!"
 	g := "Gumby!!!"
 	tst.Error(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:15: ERROR: %s\n", s) {
-		t.Errorf("error: got %q want \"ezlog_test.go:15: ERROR: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:14: ERROR: %s\n", s) {
+		t.Errorf("error: got %q want \"ezlog_test.go:14: ERROR: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Errorf("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:20: ERROR: %s %s\n", s, g) {
-		t.Errorf("errorf: got %q want \"ezlog_test.go:20: ERROR: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:19: ERROR: %s %s\n", s, g) {
+		t.Errorf("errorf: got %q want \"ezlog_test.go:19: ERROR: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Errorln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:25: ERROR: %s\n", s) {
-		t.Errorf("errorln: got %q want \"ezlog_test.go:25: ERROR: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:24: ERROR: %s\n", s) {
+		t.Errorf("errorln: got %q want \"ezlog_test.go:245: ERROR: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Info(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:30: INFO: %s\n", s) {
-		t.Errorf("info: got %q want \"ezlog_test.go:30: INFO: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:29: INFO: %s\n", s) {
+		t.Errorf("info: got %q want \"ezlog_test.go:29: INFO: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Infof("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:35: INFO: %s %s\n", s, g) {
-		t.Errorf("infof: got %q want \"ezlog_test.go:35: INFO: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:34: INFO: %s %s\n", s, g) {
+		t.Errorf("infof: got %q want \"ezlog_test.go:34: INFO: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Infoln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:40: INFO: %s\n", s) {
-		t.Errorf("infoln: got %q want \"ezlog_test.go:40: INFO: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:39: INFO: %s\n", s) {
+		t.Errorf("infoln: got %q want \"ezlog_test.go:39: INFO: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Debug(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:45: DEBUG: %s\n", s) {
-		t.Errorf("debug: got %q want \"ezlog_test.go:45: DEBUG: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:44: DEBUG: %s\n", s) {
+		t.Errorf("debug: got %q want \"ezlog_test.go:44: DEBUG: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Debugf("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:50: DEBUG: %s %s\n", s, g) {
-		t.Errorf("debugf: got %q want \"ezlog_test.go:50: DEBUG: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:49: DEBUG: %s %s\n", s, g) {
+		t.Errorf("debugf: got %q want \"ezlog_test.go:49: DEBUG: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Debugln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:55: DEBUG: %s\n", s) {
-		t.Errorf("debugln: got %q want \"ezlog_test.go:55: DEBUG: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:54: DEBUG: %s\n", s) {
+		t.Errorf("debugln: got %q want \"ezlog_test.go:54: DEBUG: %s\n\"", buf.String(), s)
 	}
 }
 
@@ -93,20 +92,20 @@ func TestParseLogFlag(t *testing.T) {
 	}{
 		{"", 0, UnknownFlagError{}},
 		{"zdate", 0, UnknownFlagError{"zdate"}},
-		{"Ldate", log.Ldate, nil},
-		{"Date", log.Ldate, nil},
-		{"LTIME", log.Ltime, nil},
-		{"TIME", log.Ltime, nil},
-		{"lmicroseconds", log.Lmicroseconds, nil},
-		{"MicroSeconds", log.Lmicroseconds, nil},
-		{"llongfile", log.Llongfile, nil},
-		{"longfile", log.Llongfile, nil},
-		{"LShortFile", log.Lshortfile, nil},
-		{"SHORTFILE", log.Lshortfile, nil},
-		{"lUTC", log.LUTC, nil},
-		{"UTC", log.LUTC, nil},
-		{"lstdflags", log.LstdFlags, nil},
-		{"stdflags", log.LstdFlags, nil},
+		{"Ldate", Ldate, nil},
+		{"Date", Ldate, nil},
+		{"LTIME", Ltime, nil},
+		{"TIME", Ltime, nil},
+		{"lmicroseconds", Lmicroseconds, nil},
+		{"MicroSeconds", Lmicroseconds, nil},
+		{"llongfile", Llongfile, nil},
+		{"longfile", Llongfile, nil},
+		{"LShortFile", Lshortfile, nil},
+		{"SHORTFILE", Lshortfile, nil},
+		{"lUTC", LUTC, nil},
+		{"UTC", LUTC, nil},
+		{"lstdflags", LstdFlags, nil},
+		{"stdflags", LstdFlags, nil},
 		{"none", 0, nil},
 	}
 
