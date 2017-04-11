@@ -1,6 +1,7 @@
 package ezlog
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"testing"
@@ -12,48 +13,48 @@ func TestLogFilenameFormat(t *testing.T) {
 	s := "oh no Mr. Bill!"
 	g := "Gumby!!!"
 	tst.Error(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:14: ERROR: %s\n", s) {
-		t.Errorf("error: got %q want \"ezlog_test.go:14: ERROR: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:15: ERROR: %s\n", s) {
+		t.Errorf("error: got %q want \"ezlog_test.go:15: ERROR: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Errorf("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:19: ERROR: %s %s\n", s, g) {
-		t.Errorf("errorf: got %q want \"ezlog_test.go:19: ERROR: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:20: ERROR: %s %s\n", s, g) {
+		t.Errorf("errorf: got %q want \"ezlog_test.go:20: ERROR: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Errorln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:24: ERROR: %s\n", s) {
-		t.Errorf("errorln: got %q want \"ezlog_test.go:245: ERROR: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:25: ERROR: %s\n", s) {
+		t.Errorf("errorln: got %q want \"ezlog_test.go:25: ERROR: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Info(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:29: INFO: %s\n", s) {
-		t.Errorf("info: got %q want \"ezlog_test.go:29: INFO: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:30: INFO: %s\n", s) {
+		t.Errorf("info: got %q want \"ezlog_test.go:30: INFO: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Infof("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:34: INFO: %s %s\n", s, g) {
-		t.Errorf("infof: got %q want \"ezlog_test.go:34: INFO: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:35: INFO: %s %s\n", s, g) {
+		t.Errorf("infof: got %q want \"ezlog_test.go:35: INFO: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Infoln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:39: INFO: %s\n", s) {
-		t.Errorf("infoln: got %q want \"ezlog_test.go:39: INFO: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:40: INFO: %s\n", s) {
+		t.Errorf("infoln: got %q want \"ezlog_test.go:40: INFO: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Debug(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:44: DEBUG: %s\n", s) {
-		t.Errorf("debug: got %q want \"ezlog_test.go:44: DEBUG: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:45: DEBUG: %s\n", s) {
+		t.Errorf("debug: got %q want \"ezlog_test.go:45: DEBUG: %s\n\"", buf.String(), s)
 	}
 	buf.Reset()
 	tst.Debugf("%s %s", s, g)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:49: DEBUG: %s %s\n", s, g) {
-		t.Errorf("debugf: got %q want \"ezlog_test.go:49: DEBUG: %s %s\n\"", buf.String(), s, g)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:50: DEBUG: %s %s\n", s, g) {
+		t.Errorf("debugf: got %q want \"ezlog_test.go:50: DEBUG: %s %s\n\"", buf.String(), s, g)
 	}
 	buf.Reset()
 	tst.Debugln(s)
-	if buf.String() != fmt.Sprintf("ezlog_test.go:54: DEBUG: %s\n", s) {
-		t.Errorf("debugln: got %q want \"ezlog_test.go:54: DEBUG: %s\n\"", buf.String(), s)
+	if buf.String() != fmt.Sprintf("ezlog_test.go:55: DEBUG: %s\n", s) {
+		t.Errorf("debugln: got %q want \"ezlog_test.go:55: DEBUG: %s\n\"", buf.String(), s)
 	}
 }
 
@@ -525,4 +526,19 @@ func TestPrint(t *testing.T) {
 		t.Errorf("println: got %q; want \"%s\n\"", buf.String(), s)
 	}
 	buf.Reset()
+}
+
+func TestFuncs(t *testing.T) {
+	var buf bytes.Buffer
+	b := bufio.NewWriter(&buf)
+	l := New(LogError, Full, b, "", 0)
+	l.AddFunc(b.Flush)
+	val := "oh no!"
+	l.Error(val)
+	l.Close()
+	val = "ERROR: " + val + "\n"
+	s := buf.String()
+	if s != val {
+		t.Errorf("got %s; want %s", s, val)
+	}
 }

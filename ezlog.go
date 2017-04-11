@@ -33,6 +33,13 @@
 // lines can be written: Fatal[f|ln] and Panic[f|ln]. Log lines w/o levels can
 // be written with the Print[f|ln] methods. These methods will always result in
 // the log lines being written.
+//
+// On Fatal and Panic calls, Logger can run functions prior to os.Exit or
+// panic. These functions are added using the AddFunc call and are expected to
+// have a func() error signature. Any errors that may occur during the
+// execution of these functions will be ignored.
+//
+// These functions can also be run by calling the Close method.
 package ezlog
 
 import (
@@ -41,6 +48,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"sync/atomic"
 )
 
@@ -176,8 +184,10 @@ func ParseLogFlag(s string) (l int, err error) {
 // level is <= the logger's level. This is safe for concurrent use.
 type Logger struct {
 	l          *log.Logger
-	level      int32 // sync.AtomicInt32
-	stringType int32 // sync.AtomicInt32
+	level      int32          // sync.AtomicInt32
+	stringType int32          // sync.AtomicInt32
+	funcs      []func() error // funcs to be run by Close
+	mu         sync.Mutex     // this protects the funcs only
 }
 
 // New creates a new Logger. The level argument sets the Logger's log level.
@@ -187,6 +197,25 @@ type Logger struct {
 // each line will start with. The flag argument sets the logger's properties.
 func New(level Level, levelStringType LevelStringType, out io.Writer, prefix string, flag int) *Logger {
 	return &Logger{l: log.New(out, prefix, flag), level: int32(level), stringType: int32(levelStringType)}
+}
+
+// AddFunc adds a func to the logger that is to be run by the Close, Fatal, and
+// Panic methods. Funcs will be run in the order they are added.
+func (l *Logger) AddFunc(f func() error) {
+	l.mu.Lock()
+	l.funcs = append(l.funcs, f)
+	l.mu.Unlock()
+}
+
+// Close runs any funcs that the logger was given. Any errors that occurs
+// during the execution of these funcs are ignored as this is expected to occur
+// immediately before the application exits.
+func (l *Logger) Close() {
+	l.mu.Lock()
+	for _, f := range l.funcs {
+		f()
+	}
+	l.mu.Unlock()
 }
 
 // Error writes an error line to the logger. If the logger's level is less than
@@ -290,6 +319,7 @@ func (l *Logger) Debugln(v ...interface{}) {
 func (l *Logger) Fatal(v ...interface{}) {
 	v = append([]interface{}{l.levelString(logFatal), " "}, v...)
 	l.l.Output(2, fmt.Sprint(v...))
+	l.Close()
 	os.Exit(1)
 }
 
@@ -297,6 +327,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 // followed by a call to os.Exit(1).
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(logFatal), format), v...))
+	l.Close()
 	os.Exit(1)
 }
 
@@ -305,6 +336,7 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 func (l *Logger) Fatalln(v ...interface{}) {
 	v = append([]interface{}{l.levelString(logFatal)}, v...)
 	l.l.Output(2, fmt.Sprintln(v...))
+	l.Close()
 	os.Exit(1)
 }
 
@@ -314,6 +346,7 @@ func (l *Logger) Panic(v ...interface{}) {
 	v = append([]interface{}{l.levelString(LogDebug), " "}, v...)
 	s := fmt.Sprint(v...)
 	l.l.Output(2, s)
+	l.Close()
 	panic(s)
 }
 
@@ -322,6 +355,7 @@ func (l *Logger) Panic(v ...interface{}) {
 func (l *Logger) Panicf(format string, v ...interface{}) {
 	s := fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(logPanic), format), v...)
 	l.l.Output(2, s)
+	l.Close()
 	panic(s)
 }
 
@@ -331,6 +365,7 @@ func (l *Logger) Panicln(v ...interface{}) {
 	v = append([]interface{}{l.levelString(LogDebug)}, v...)
 	s := fmt.Sprintln(v...)
 	l.l.Output(2, s)
+	l.Close()
 	panic(s)
 }
 
@@ -427,6 +462,19 @@ func (l *Logger) levelString(i Level) string {
 }
 
 var std = New(LogError, Full, os.Stderr, "", log.LstdFlags)
+
+// AddFunc adds a func to the standard logger that is to be run by the Close,
+// Fatal, and Panic methods. Funcs will be run in the order they are added.
+func AddFunc(f func() error) {
+	std.AddFunc(f)
+}
+
+// Close runs any funcs that standard logger was given. Any errors that occurs
+// during the execution of these funcs are ignored as this is expected to occur
+// immediately before the application exits.
+func Close() {
+	std.Close()
+}
 
 // Error writes an error entry to the standard logger. If the logger's level is
 // less than LogError, the line will be discarded. Arguments are handled in the
