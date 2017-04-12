@@ -91,8 +91,9 @@ func TestParseLogFlag(t *testing.T) {
 		expected int
 		err      error
 	}{
-		{"", 0, UnknownFlagError{}},
+		{"", LstdFlags, nil},
 		{"zdate", 0, UnknownFlagError{"zdate"}},
+		{"datetime", 0, UnknownFlagError{"datetime"}},
 		{"Ldate", Ldate, nil},
 		{"Date", Ldate, nil},
 		{"LTIME", Ltime, nil},
