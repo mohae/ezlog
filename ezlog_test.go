@@ -85,7 +85,7 @@ func TestSeverityByName(t *testing.T) {
 	}
 }
 
-func TestParseLogFlag(t *testing.T) {
+func TestParseFlag(t *testing.T) {
 	tests := []struct {
 		v        string
 		expected int
@@ -112,7 +112,7 @@ func TestParseLogFlag(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		v, err := ParseLogFlag(test.v)
+		v, err := ParseFlag(test.v)
 		if err != nil {
 			if err != test.err {
 				t.Errorf("%q: got %s; want %s", test.v, err, test.err)

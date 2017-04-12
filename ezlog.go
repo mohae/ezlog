@@ -152,13 +152,13 @@ func (e UnknownFlagError) Error() string {
 	return "unknown log flag: " + e.S
 }
 
-// ParseLogFlag returns the log Flag for s. A match is found when s is equal to
+// ParseFlag returns the log Flag for s. A match is found when s is equal to
 // either the name of a Flag constant or the name of a Flag constant without
 // the leading 'l', e.g. both "lstdflags" and "stdflags" will return the value
 // for the LstdFlags constant. The match is case-insensitve. Empty string is
 // treated as wanting the default LstdFlags; returning LstdFlags. An
 // UnknownFlagError is returned if no match for s is found.
-func ParseLogFlag(s string) (l int, err error) {
+func ParseFlag(s string) (l int, err error) {
 	v := strings.ToLower(s)
 	switch v {
 	case "":
