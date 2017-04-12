@@ -85,7 +85,7 @@ const (
 )
 
 func (l Level) String() string {
-	return levelName[l]
+	return level[l]
 }
 
 // LevelStringType is the type of string output that will be used for the log
@@ -116,13 +116,22 @@ var levelShort = []string{
 	logPanic: "PANIC:",
 }
 
-var levelName = []string{
+var levelFull = []string{
 	LogNone:  "NONE:",
 	LogError: "ERROR:",
 	LogInfo:  "INFO:",
 	LogDebug: "DEBUG:",
 	logFatal: "FATAL:",
 	logPanic: "PANIC:",
+}
+
+var level = []string{
+	LogNone:  "NONE",
+	LogError: "ERROR",
+	LogInfo:  "INFO",
+	LogDebug: "DEBUG",
+	logFatal: "FATAL",
+	logPanic: "PANIC",
 }
 
 // LevelByName gets the Level corresponding to s. A false will be returned if s
@@ -454,7 +463,7 @@ func (l *Logger) levelString(i Level) string {
 	v := LevelStringType(atomic.LoadInt32(&l.stringType))
 	switch v {
 	case Full:
-		return levelName[i]
+		return levelFull[i]
 	case Char:
 		return levelChar[i]
 	case Short:

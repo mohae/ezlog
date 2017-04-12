@@ -543,3 +543,38 @@ func TestFuncs(t *testing.T) {
 		t.Errorf("got %s; want %s", s, val)
 	}
 }
+
+func TestLevelString(t *testing.T) {
+	tests := []struct {
+		Level
+		expected string
+	}{
+		{LogNone, "NONE"},
+		{LogError, "ERROR"},
+		{LogInfo, "INFO"},
+		{LogDebug, "DEBUG"},
+		{logFatal, "FATAL"},
+		{logPanic, "PANIC"},
+	}
+	for _, test := range tests {
+		if test.Level.String() != test.expected {
+			t.Errorf("got %q; want %q", test.Level.String(), test.expected)
+		}
+	}
+}
+
+func TestInvalidLoggerLevelString(t *testing.T) {
+	var buf bytes.Buffer
+	l := New(LogError, 42, &buf, "", 0) // 42 is an invalid value
+	s := l.levelString(LogError)
+	if s != "" {
+		t.Errorf("got %q; want \"\"", s)
+	}
+}
+
+func TestUnknownFlagError(t *testing.T) {
+	err := UnknownFlagError{"vogons"}
+	if err.Error() != "unknown log flag: vogons" {
+		t.Errorf("got %q; want \"unknown log flag: vogons", err)
+	}
+}
