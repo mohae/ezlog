@@ -244,8 +244,7 @@ func (l *Logger) Error(v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogError) {
 		return
 	}
-	v = append([]interface{}{l.levelString(LogError), " "}, v...)
-	l.l.Output(l.callDepth, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(append([]interface{}{l.levelString(LogError), " "}, v...)...))
 }
 
 // Errorf writes an error line to the logger using the provided format and
@@ -265,8 +264,7 @@ func (l *Logger) Errorln(v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogError) {
 		return
 	}
-	v = append([]interface{}{l.levelString(LogError)}, v...)
-	l.l.Output(l.callDepth, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(append([]interface{}{l.levelString(LogError)}, v...)...))
 }
 
 // Info writes an info entry to the logger. If the level is less than LogInfo,
@@ -276,8 +274,7 @@ func (l *Logger) Info(v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogInfo) {
 		return
 	}
-	v = append([]interface{}{l.levelString(LogInfo), " "}, v...)
-	l.l.Output(l.callDepth, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(append([]interface{}{l.levelString(LogInfo), " "}, v...)...))
 }
 
 // Infof writes an info line to the logger using the provided format and data.
@@ -297,8 +294,7 @@ func (l *Logger) Infoln(v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogInfo) {
 		return
 	}
-	v = append([]interface{}{l.levelString(LogInfo)}, v...)
-	l.l.Output(l.callDepth, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(append([]interface{}{l.levelString(LogInfo)}, v...)...))
 }
 
 // Debug writes a debug line to the logger. If the level is less than LogDebug,
@@ -308,8 +304,7 @@ func (l *Logger) Debug(v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogDebug) {
 		return
 	}
-	v = append([]interface{}{l.levelString(LogDebug), " "}, v...)
-	l.l.Output(l.callDepth, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(append([]interface{}{l.levelString(LogDebug), " "}, v...)...))
 }
 
 // Debugf writes a debug line to the logger using the provided format and data.
@@ -329,15 +324,13 @@ func (l *Logger) Debugln(v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogDebug) {
 		return
 	}
-	v = append([]interface{}{l.levelString(LogDebug)}, v...)
-	l.l.Output(l.callDepth, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(append([]interface{}{l.levelString(LogDebug)}, v...)...))
 }
 
 // Fatal writes a fatal line to the logger followed by a call to os.Exit(1).
 // Arguments are handled in the manner of fmt.Print.
 func (l *Logger) Fatal(v ...interface{}) {
-	v = append([]interface{}{l.levelString(logFatal), " "}, v...)
-	l.l.Output(l.callDepth, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(append([]interface{}{l.levelString(logFatal), " "}, v...)...))
 	l.Close()
 	os.Exit(1)
 }
@@ -353,8 +346,7 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 // Fatalln writes a fatal line to the logger followed by a call to os.Exit(1).
 // Arguments are handled in the manner of fmt.Println.
 func (l *Logger) Fatalln(v ...interface{}) {
-	v = append([]interface{}{l.levelString(logFatal)}, v...)
-	l.l.Output(l.callDepth, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(append([]interface{}{l.levelString(logFatal)}, v...)...))
 	l.Close()
 	os.Exit(1)
 }
@@ -362,8 +354,7 @@ func (l *Logger) Fatalln(v ...interface{}) {
 // Panic writes a panic line to the logger followed by a call to panic().
 // Arguments are handled in the manner of fmt.Print.
 func (l *Logger) Panic(v ...interface{}) {
-	v = append([]interface{}{l.levelString(LogDebug), " "}, v...)
-	s := fmt.Sprint(v...)
+	s := fmt.Sprint(append([]interface{}{l.levelString(LogDebug), " "}, v...)...)
 	l.l.Output(l.callDepth, s)
 	l.Close()
 	panic(s)
@@ -381,8 +372,7 @@ func (l *Logger) Panicf(format string, v ...interface{}) {
 // Panicln writes a panic line to the logger followed by a call to panic().
 // Arguments are handled in the manner of fmt.Println.
 func (l *Logger) Panicln(v ...interface{}) {
-	v = append([]interface{}{l.levelString(LogDebug)}, v...)
-	s := fmt.Sprintln(v...)
+	s := fmt.Sprintln(append([]interface{}{l.levelString(LogDebug)}, v...)...)
 	l.l.Output(l.callDepth, s)
 	l.Close()
 	panic(s)
