@@ -135,17 +135,23 @@ var level = []string{
 }
 
 // LevelByName gets the Level corresponding to s. A false will be returned if s
-// doesn't match any Levels.
+// doesn't match any Levels. S is uppper-cased prior to evaluation.
+//
+// Supported values:
+//    LogNone:   none, n, empty string ("")
+//    LogError:  error, e, error
+//    LogInfo:   info, i, inf
+//    LogDebug:  debug, d, dbg
 func LevelByName(s string) (level Level, ok bool) {
 	v := strings.ToUpper(s)
 	switch v {
-	case "NONE":
+	case "NONE", "N", "":
 		return LogNone, true
-	case "ERROR":
+	case "ERROR", "E", "ERR":
 		return LogError, true
-	case "INFO":
+	case "INFO", "I", "INF":
 		return LogInfo, true
-	case "DEBUG":
+	case "DEBUG", "D", "DBG":
 		return LogDebug, true
 	default:
 		return 0, false

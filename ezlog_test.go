@@ -58,20 +58,27 @@ func TestLogFilenameFormat(t *testing.T) {
 	}
 }
 
-func TestSeverityByName(t *testing.T) {
+func TestLevelByName(t *testing.T) {
 	tests := []struct {
 		name  string
 		level Level
 		ok    bool
 	}{
-		{"", 0, false},
 		{"warn", 0, false},
 		{"none", LogNone, true},
-		{"error", LogError, true},
+		{"N", LogNone, true},
+		{"", LogNone, true},
+		{"ERROR", LogError, true},
+		{"e", LogError, true},
+		{"Err", LogError, true},
 		{"info", LogInfo, true},
+		{"I", LogInfo, true},
+		{"inf", LogInfo, true},
 		{"debug", LogDebug, true},
 		{"DEBUG", LogDebug, true},
 		{"DeBuG", LogDebug, true},
+		{"d", LogDebug, true},
+		{"DBG", LogDebug, true},
 	}
 
 	for _, test := range tests {
