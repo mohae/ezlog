@@ -206,6 +206,7 @@ type Logger struct {
 	stringType int32          // sync.AtomicInt32
 	funcs      []func() error // funcs to be run by Close
 	mu         sync.Mutex     // this protects the funcs only
+	callDepth  int
 }
 
 // New creates a new Logger. The level argument sets the Logger's log level.
@@ -214,7 +215,7 @@ type Logger struct {
 // argument sets the log data output destination. The prefix argument sets what
 // each line will start with. The flag argument sets the logger's properties.
 func New(level Level, levelStringType LevelStringType, out io.Writer, prefix string, flag int) *Logger {
-	return &Logger{l: log.New(out, prefix, flag), level: int32(level), stringType: int32(levelStringType)}
+	return &Logger{l: log.New(out, prefix, flag), level: int32(level), stringType: int32(levelStringType), callDepth: 2}
 }
 
 // AddFunc adds a func to the logger that is to be run by the Close, Fatal, and
@@ -244,7 +245,7 @@ func (l *Logger) Error(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogError), " "}, v...)
-	l.l.Output(2, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(v...))
 }
 
 // Errorf writes an error line to the logger using the provided format and
@@ -254,7 +255,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogError) {
 		return
 	}
-	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogError), format), v...))
+	l.l.Output(l.callDepth, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogError), format), v...))
 }
 
 // Errorln writes an error line to the logger. If the logger's level is less
@@ -265,7 +266,7 @@ func (l *Logger) Errorln(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogError)}, v...)
-	l.l.Output(2, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(v...))
 }
 
 // Info writes an info entry to the logger. If the level is less than LogInfo,
@@ -276,7 +277,7 @@ func (l *Logger) Info(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogInfo), " "}, v...)
-	l.l.Output(2, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(v...))
 }
 
 // Infof writes an info line to the logger using the provided format and data.
@@ -286,7 +287,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogInfo) {
 		return
 	}
-	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogInfo), format), v...))
+	l.l.Output(l.callDepth, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogInfo), format), v...))
 }
 
 // Infoln writes an info entry to the logger. If the level is less than
@@ -297,7 +298,7 @@ func (l *Logger) Infoln(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogInfo)}, v...)
-	l.l.Output(2, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(v...))
 }
 
 // Debug writes a debug line to the logger. If the level is less than LogDebug,
@@ -308,7 +309,7 @@ func (l *Logger) Debug(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogDebug), " "}, v...)
-	l.l.Output(2, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(v...))
 }
 
 // Debugf writes a debug line to the logger using the provided format and data.
@@ -318,7 +319,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 	if atomic.LoadInt32(&l.level) < int32(LogDebug) {
 		return
 	}
-	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogDebug), format), v...))
+	l.l.Output(l.callDepth, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(LogDebug), format), v...))
 }
 
 // Debugln writes a debug line to the logger. If the level is less than
@@ -329,14 +330,14 @@ func (l *Logger) Debugln(v ...interface{}) {
 		return
 	}
 	v = append([]interface{}{l.levelString(LogDebug)}, v...)
-	l.l.Output(2, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(v...))
 }
 
 // Fatal writes a fatal line to the logger followed by a call to os.Exit(1).
 // Arguments are handled in the manner of fmt.Print.
 func (l *Logger) Fatal(v ...interface{}) {
 	v = append([]interface{}{l.levelString(logFatal), " "}, v...)
-	l.l.Output(2, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(v...))
 	l.Close()
 	os.Exit(1)
 }
@@ -344,7 +345,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 // Fatalf writes a fatal line to the logger using the provided format and data
 // followed by a call to os.Exit(1).
 func (l *Logger) Fatalf(format string, v ...interface{}) {
-	l.l.Output(2, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(logFatal), format), v...))
+	l.l.Output(l.callDepth, fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(logFatal), format), v...))
 	l.Close()
 	os.Exit(1)
 }
@@ -353,7 +354,7 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 // Arguments are handled in the manner of fmt.Println.
 func (l *Logger) Fatalln(v ...interface{}) {
 	v = append([]interface{}{l.levelString(logFatal)}, v...)
-	l.l.Output(2, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(v...))
 	l.Close()
 	os.Exit(1)
 }
@@ -363,7 +364,7 @@ func (l *Logger) Fatalln(v ...interface{}) {
 func (l *Logger) Panic(v ...interface{}) {
 	v = append([]interface{}{l.levelString(LogDebug), " "}, v...)
 	s := fmt.Sprint(v...)
-	l.l.Output(2, s)
+	l.l.Output(l.callDepth, s)
 	l.Close()
 	panic(s)
 }
@@ -372,7 +373,7 @@ func (l *Logger) Panic(v ...interface{}) {
 // followed by a call to panic().
 func (l *Logger) Panicf(format string, v ...interface{}) {
 	s := fmt.Sprintf(fmt.Sprintf("%s %s", l.levelString(logPanic), format), v...)
-	l.l.Output(2, s)
+	l.l.Output(l.callDepth, s)
 	l.Close()
 	panic(s)
 }
@@ -382,7 +383,7 @@ func (l *Logger) Panicf(format string, v ...interface{}) {
 func (l *Logger) Panicln(v ...interface{}) {
 	v = append([]interface{}{l.levelString(LogDebug)}, v...)
 	s := fmt.Sprintln(v...)
-	l.l.Output(2, s)
+	l.l.Output(l.callDepth, s)
 	l.Close()
 	panic(s)
 }
@@ -394,7 +395,7 @@ func (l *Logger) Print(v ...interface{}) {
 	if atomic.LoadInt32(&l.level) <= int32(LogNone) {
 		return
 	}
-	l.l.Output(2, fmt.Sprint(v...))
+	l.l.Output(l.callDepth, fmt.Sprint(v...))
 }
 
 // Printf writes a log line to the logger. Unless the logger's level is
@@ -404,7 +405,7 @@ func (l *Logger) Printf(format string, v ...interface{}) {
 	if atomic.LoadInt32(&l.level) <= int32(LogNone) {
 		return
 	}
-	l.l.Output(2, fmt.Sprintf(format, v...))
+	l.l.Output(l.callDepth, fmt.Sprintf(format, v...))
 }
 
 // Println writes a log line to the logger. Unless the logger's level is
@@ -414,7 +415,7 @@ func (l *Logger) Println(v ...interface{}) {
 	if atomic.LoadInt32(&l.level) <= int32(LogNone) {
 		return
 	}
-	l.l.Output(2, fmt.Sprintln(v...))
+	l.l.Output(l.callDepth, fmt.Sprintln(v...))
 }
 
 // Flags returns the logger's output flags.
@@ -479,7 +480,12 @@ func (l *Logger) levelString(i Level) string {
 	return ""
 }
 
-var std = New(LogError, Full, os.Stderr, "", log.LstdFlags)
+var std *Logger
+
+func init() {
+	std = New(LogError, Full, os.Stderr, "", log.LstdFlags)
+	std.callDepth = 3
+}
 
 // AddFunc adds a func to the standard logger that is to be run by the Close,
 // Fatal, and Panic methods. Funcs will be run in the order they are added.
